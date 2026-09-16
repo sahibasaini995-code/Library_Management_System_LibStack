@@ -1,0 +1,185 @@
+
+package com.nadish.libraryManagementSystem.controller;
+
+import com.nadish.libraryManagementSystem.model.Book;
+import com.nadish.libraryManagementSystem.service.BookService;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.List;
+import java.util.Optional;
+
+@RestController
+@RequestMapping("api/book")
+public class BookController {
+    @Autowired
+    private BookService bookService;
+
+    @GetMapping("/{title}")
+    public ResponseEntity<List<Book>> getBooksByTitle(@PathVariable String title) {
+        List<Book> books = bookService.getSingleBookTitle(title);
+        if (!books.isEmpty()) {
+            return ResponseEntity.ok(books);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/listissued")
+    public ResponseEntity<List<Book>> getIssuedBooks() {
+        List<Book> books = bookService.getAllIssuedBooks();
+        return ResponseEntity.ok(books);
+    }
+
+    @GetMapping("/bookId/{bookId}")
+    public ResponseEntity<Optional<Book>> getBooksByBookId(@PathVariable String bookId) {
+        Optional<Book> books = bookService.getSingleBookBookId(bookId);
+        if (!books.isEmpty()) {
+            return ResponseEntity.ok(books);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @PostMapping("/unissue")
+    public ResponseEntity<Book> unissueBook(@RequestBody UnissueBookRequest request) {
+        Book unissuedBook = bookService.unissueBook(request.getBookId());
+        return new ResponseEntity<>(unissuedBook, HttpStatus.OK);
+    }
+
+    // DTO for unissue book request
+    static class UnissueBookRequest {
+        private String bookId;
+
+        public String getBookId() {
+            return bookId;
+        }
+
+        public void setBookId(String bookId) {
+            this.bookId = bookId;
+        }
+    }
+
+    @GetMapping("/issued")
+    public ResponseEntity<List<Book>> getUnavailableBooks() {
+        List<Book> books = bookService.getUnavailableBooks();
+        if (!books.isEmpty()) {
+            return ResponseEntity.ok(books);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping("/available")
+    public ResponseEntity<List<Book>> getAvailableBooks() {
+        List<Book> books = bookService.getAvailableBooks();
+        if (!books.isEmpty()) {
+            return ResponseEntity.ok(books);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Book>> getBooks() {
+        List<Book> books = bookService.getAllBooks();
+        if (!books.isEmpty()) {
+            return ResponseEntity.ok(books);
+        } else {
+            return ResponseEntity.notFound().build();
+        }
+    }
+
+    @DeleteMapping("/{bookId}")
+    public ResponseEntity<Void> deleteBook(@PathVariable String bookId) {
+        bookService.deleteBook(bookId);
+        return ResponseEntity.noContent().build();
+    }
+
+    @PostMapping
+    public ResponseEntity<Book> createBook(@RequestBody Book book) {
+        Book newBook = bookService.createBook(book);
+        return new ResponseEntity<Book>(newBook, HttpStatus.CREATED);
+    }
+
+    @PutMapping("/{bookId}")
+    public ResponseEntity<Book> updateBook(@PathVariable String bookId, @RequestBody Book updatedBook) {
+        Book book = bookService.updateBook(bookId, updatedBook);
+        return ResponseEntity.ok().body(book);
+    }
+
+    // @GetMapping("/admin/{isAdmin}")
+    // public ResponseEntity<List<Book>> getBooksByAdminStatus(@PathVariable boolean
+    // isAdmin) {
+    // List<Book> books = bookService.getBooksByAdminStatus(isAdmin);
+    // return new ResponseEntity<List<Book>>(books, HttpStatus.OK);
+    // }
+    @PostMapping("/issue")
+    public ResponseEntity<Book> issueBook(@RequestBody IssueBookRequest request) {
+        Book issuedBook = bookService.issueBook(request.getBookId(), request.getUserId(), request.getIssueDate(),
+                request.getExpectedReturnDate());
+        return new ResponseEntity<>(issuedBook, HttpStatus.OK);
+    }
+}
+
+// DTO for issue book request
+class IssueBookRequest {
+    private String bookId;
+    private String userId;
+    private java.util.Date issueDate;
+    private java.util.Date expectedReturnDate;
+
+    public String getBookId() {
+        return bookId;
+    }
+
+    public void setBookId(String bookId) {
+        this.bookId = bookId;
+    }
+
+    public String getUserId() {
+        return userId;
+    }
+
+    public void setUserId(String userId) {
+        this.userId = userId;
+    }
+
+    public java.util.Date getIssueDate() {
+        return issueDate;
+    }
+
+    public void setIssueDate(java.util.Date issueDate) {
+        this.issueDate = issueDate;
+    }
+
+    public java.util.Date getExpectedReturnDate() {
+        return expectedReturnDate;
+    }
+
+    public void setExpectedReturnDate(java.util.Date expectedReturnDate) {
+        this.expectedReturnDate = expectedReturnDate;
+    }
+}
+
+// @GetMapping("/{email}")
+// public ResponseEntity<Optional><Book> getbookByEmail(@PathVariable String
+// email) {
+// book book
+// }
+// @PostMapping("/login")
+// public ResponseEntity<String> login(@RequestBody bookLoginDto bookLoginDto) {
+// // Retrieve book from database using the email in bookLoginDto
+// book book = bookService.getbookByEmail(bookLoginDto.getEmail());
+// // Validate book's password
+// if (book != null && book.getPassword().equals(bookLoginDto.getPassword())) {
+// // Passwords match, return success response
+// return new ResponseEntity<>("Login successful", HttpStatus.OK);
+// } else {
+// // Invalid bookname or password, return error response
+// return new ResponseEntity<>("Invalid bookname or password",
+// HttpStatus.UNAUTHORIZED);
+// }
+// }
